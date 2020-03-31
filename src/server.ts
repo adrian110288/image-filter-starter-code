@@ -32,7 +32,32 @@ import fs from 'fs'
   /**************************************************************************** */
 
   //! END @TODO1
-  
+  app.get("/filteredimage",
+    async ( req, res ) => {
+
+      const { image_url } = req.query
+      
+      if (!image_url) {
+        return res.status(400).send("image_url invalid")
+      }
+
+      const filteredPhotoUrl = await filterImageFromURL(image_url)
+
+      if (!filteredPhotoUrl) {
+        return res.status(400).send("Image could not be filtered")
+      }
+
+      res.addListener("finish", () => {
+        console.log(`removing image ${filteredPhotoUrl} ...`)
+        
+        fs.unlink(filteredPhotoUrl, (error) => {
+          if (error) console.log(`error cleaning up image ${filteredPhotoUrl}`)
+          else console.log(`image ${filteredPhotoUrl} removed`)
+        })
+      } )
+      return res.sendFile(filteredPhotoUrl)      
+    }
+  )
   
   // Root Endpoint
   // Displays a simple message to the user
