@@ -41,21 +41,28 @@ import fs from 'fs'
         return res.status(400).send("image_url invalid")
       }
 
-      const filteredPhotoUrl = await filterImageFromURL(image_url)
+      try {
 
-      if (!filteredPhotoUrl) {
-        return res.status(400).send("Image could not be filtered")
+        const filteredPhotoUrl = await filterImageFromURL(image_url)
+
+        if (!filteredPhotoUrl) {
+          return res.status(400).send("Error filtering image")
+        }
+
+        res.addListener("finish", () => {
+          console.log(`removing image ${filteredPhotoUrl} ...`)
+          
+          fs.unlink(filteredPhotoUrl, (error) => {
+            if (error) console.log(`error cleaning up image ${filteredPhotoUrl}`)
+            else console.log(`image ${filteredPhotoUrl} removed`)
+          })
+        } )
+        return res.status(200).sendFile(filteredPhotoUrl)
+
+      } catch(error) {
+        return res.status(422).send("Image could not be processed")
       }
 
-      res.addListener("finish", () => {
-        console.log(`removing image ${filteredPhotoUrl} ...`)
-        
-        fs.unlink(filteredPhotoUrl, (error) => {
-          if (error) console.log(`error cleaning up image ${filteredPhotoUrl}`)
-          else console.log(`image ${filteredPhotoUrl} removed`)
-        })
-      } )
-      return res.sendFile(filteredPhotoUrl)      
     }
   )
   
