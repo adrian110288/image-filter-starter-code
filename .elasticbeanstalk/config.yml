@@ -2,6 +2,8 @@ branch-defaults:
   default:
     environment: null
     group_suffix: null
+  master:
+    environment: image-filter-starter-code-dev
 deploy:
   artifact: ./www/Archive.zip
 global:
